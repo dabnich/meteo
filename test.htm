@@ -6,11 +6,15 @@
         body {
             margin: 0;
             background: #111;
+            color: #ff5555;
+            font-family: monospace;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            text-align: center;
+            padding: 20px;
         }
         img {
             width: 100%;
@@ -21,34 +25,41 @@
 </head>
 <body>
 
-    <img id="radar-img" src="" alt="Ładowanie radaru RainViewer...">
+    <div id="status">Ładowanie radaru RainViewer...</div>
+    <img id="radar-img" src="" alt="" style="display:none;">
 
     <script>
         function loadLatestRadar() {
-            // Pobieramy publiczny plik JSON z RainViewer z listą dostępnych klatek
+            const statusEl = document.getElementById('status');
+            const imgEl = document.getElementById('radar-img');
+
             fetch('https://api.rainviewer.com/public/weather-maps.json')
-                .response => response.json()
+                .then(response => {
+                    if (!response.ok) throw new Error('Błąd sieci: ' + response.status);
+                    return response.json();
+                })
                 .then(data => {
-                    // Sprawdzamy czy są dostępne klatki archiwalne/aktualne (past)
                     if (data && data.radar && data.radar.past && data.radar.past.length > 0) {
-                        // Bierzemy ostatnią (najświeższą) klatkę
                         const latestFrame = data.radar.past[data.radar.past.length - 1];
                         const timestamp = latestFrame.time;
                         
-                        // Składamy adres URL do gotowej nałożonej mapy (kolor styl=2, rozmiar, klatka czasowa)
-                        // Host kafelków RainViewer pozwala na pobranie gotowej kompozycji
+                        // Współrzędne Gdyni: 54.5, 18.5, zoom 4, rozmiar 512
                         const imageUrl = `https://tile.rainviewer.com/v2/radar/${timestamp}/512/4/54.5/18.5/4_1.png`;
                         
-                        document.getElementById('radar-img').src = imageUrl;
+                        imgEl.src = imageUrl;
+                        imgEl.style.display = 'block';
+                        statusEl.style.display = 'none';
+                    } else {
+                        statusEl.innerText = 'Brak danych radarowych w odpowiedzi JSON.';
                     }
                 })
-                .catch(err => console.error("Błąd pobierania radaru:", err));
+                .catch(err => {
+                    console.error(err);
+                    statusEl.innerText = 'Błąd: ' + err.message;
+                });
         }
 
-        // Załaduj od razu po otwarciu
         loadLatestRadar();
-
-        // Odświeżaj co 10 minut (600000 ms), żeby widżet dociągał nowe opady
         setInterval(loadLatestRadar, 600000);
     </script>
 
