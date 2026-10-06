@@ -3,65 +3,25 @@
 <head>
     <meta charset="utf-8">
     <style>
-        body {
+        body, html {
             margin: 0;
-            background: #111;
-            color: #ff5555;
-            font-family: monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            text-align: center;
-            padding: 20px;
-        }
-        img {
+            padding: 0;
             width: 100%;
-            height: auto;
-            object-fit: contain;
+            height: 100%;
+            background: #111;
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
     </style>
 </head>
 <body>
 
-    <div id="status">Ładowanie radaru RainViewer...</div>
-    <img id="radar-img" src="" alt="" style="display:none;">
-
-    <script>
-        function loadLatestRadar() {
-            const statusEl = document.getElementById('status');
-            const imgEl = document.getElementById('radar-img');
-
-            fetch('https://api.rainviewer.com/public/weather-maps.json')
-                .then(response => {
-                    if (!response.ok) throw new Error('Błąd sieci: ' + response.status);
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.radar && data.radar.past && data.radar.past.length > 0) {
-                        const latestFrame = data.radar.past[data.radar.past.length - 1];
-                        const timestamp = latestFrame.time;
-                        
-                        // Współrzędne Gdyni: 54.5, 18.5, zoom 4, rozmiar 512
-                        const imageUrl = `https://tile.rainviewer.com/v2/radar/${timestamp}/512/4/54.5/18.5/4_1.png`;
-                        
-                        imgEl.src = imageUrl;
-                        imgEl.style.display = 'block';
-                        statusEl.style.display = 'none';
-                    } else {
-                        statusEl.innerText = 'Brak danych radarowych w odpowiedzi JSON.';
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    statusEl.innerText = 'Błąd: ' + err.message;
-                });
-        }
-
-        loadLatestRadar();
-        setInterval(loadLatestRadar, 600000);
-    </script>
+    <!-- Mapa RainViewer wycentrowana na Gdynię (szerokość 54.5, długość 18.5, zoom 8) -->
+    <iframe src="https://www.rainviewer.com/map.html?loc=54.5,18.5,8&oFa=1&oC=1&oU=0&oCS=1&oF=1&oAP=1&rmt=3&c=1&o=13&lm=1&layer=radar&sm=1&sn=1"></iframe>
 
 </body>
 </html>
