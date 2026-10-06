@@ -3,25 +3,84 @@
 <head>
     <meta charset="utf-8">
     <style>
-        body, html {
+        body {
             margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background: #111;
-            overflow: hidden;
+            background: #121212;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
+        .weather-card {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            width: 260px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        .city {
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .temp {
+            font-size: 48px;
+            font-weight: bold;
+            color: #4da6ff;
+            margin: 10px 0;
+        }
+        .details {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.5;
+            border-top: 1px solid #333;
+            padding-top: 10px;
+            margin-top: 10px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
 
-    <!-- Mapa RainViewer wycentrowana na Gdynię (szerokość 54.5, długość 18.5, zoom 8) -->
-    <iframe src="https://www.rainviewer.com/map.html?loc=54.5,18.5,8&oFa=1&oC=1&oU=0&oCS=1&oF=1&oAP=1&rmt=3&c=1&o=13&lm=1&layer=radar&sm=1&sn=1"></iframe>
+    <div class="weather-card">
+        <div class="city">Gdynia</div>
+        <div class="temp" id="temp">--°C</div>
+        <div class="details" id="details">Pobieranie pogody...</div>
+    </div>
+
+    <script>
+        function loadWeather() {
+            // Używamy endpointu forecast z Twoimi współrzędnymi
+            const url = 'https://api.open-meteo.com/v1/forecast?latitude=54.4743466&longitude=18.4826286&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&timezone=auto';
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const current = data.current;
+                    document.getElementById('temp').innerText = current.temperature_2m + '°C';
+                    document.getElementById('details').innerHTML = 
+                        `Wiatr: <b>${current.wind_speed_10m} km/h</b><br>` +
+                        `Opady: <b>${current.precipitation} mm</b><br>` +
+                        `Wilgotność: <b>${current.relative_humidity_2m}%</b>`;
+                })
+                .catch(err => {
+                    document.getElementById('details').innerText = 'Błąd pobierania danych';
+                    console.error(err);
+                });
+        }
+
+        // Załaduj od razu
+        loadWeather();
+
+        // Odświeżaj dane co 10 minut
+        setInterval(loadWeather, 600000);
+    </script>
 
 </body>
 </html>
